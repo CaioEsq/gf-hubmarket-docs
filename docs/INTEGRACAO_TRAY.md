@@ -4,7 +4,8 @@
 
 Use `br.com.herasistemas.service.tray.Tray` quando o cliente precisar integrar a API da Tray.
 
-Essa classe representa a integracao concreta e deve ser instanciada com as credenciais carregadas do banco para o cliente corrente.
+Essa classe representa a integracao concreta e deve ser instanciada com as credenciais carregadas do banco para o
+cliente corrente.
 
 ## Fluxo de geracao de credenciais
 
@@ -52,8 +53,10 @@ Se a API responder `401`, a implementacao da Tray tenta renovar o token usando o
 
 1. Validar `token`, `refreshToken` e `apiAddress` com `isCredenciaisValidas`.
 2. Se as credenciais nao forem validas, tentar gerar novas usando o `code` persistido.
-3. Se nao for possivel renovar, redirecionar o Cliente para um Link de Tutorial ou o site da Tray para Habilitar a Integração no painel.
-4. Quando as credenciais estiverem validas, carregar `token`, `refreshToken` e `apiAddress` na integracao antes de usar os servicos.
+3. Se nao for possivel renovar, redirecionar o Cliente para um Link de Tutorial ou o site da Tray para Habilitar a
+   Integração no painel.
+4. Quando as credenciais estiverem validas, carregar `token`, `refreshToken` e `apiAddress` na integracao antes de usar
+   os servicos.
 
 ## Produtos na Tray
 
@@ -78,7 +81,8 @@ Observacoes importantes:
 - A ativacao de produto na Tray usa `PUT /products/{id}` com `available=1` em um payload minimo de disponibilidade.
 - A exclusao de produto na Tray e logica: a biblioteca usa `PUT /products/{id}` com `available=0`.
 
-Quando a Tray responder `404` em `consultarProduto`, a biblioteca trata isso como produto inexistente para o identificador informado e nao inclui aquela integracao no retorno.
+Quando a Tray responder `404` em `consultarProduto`, a biblioteca trata isso como produto inexistente para o
+identificador informado e nao inclui aquela integracao no retorno.
 
 ## Pedidos na Tray
 
@@ -102,10 +106,13 @@ Operacoes suportadas hoje:
 
 - Para `consultarPedido`, a implementacao da Tray tenta primeiro o endpoint completo `/orders/{id}/complete`.
 - Se a loja nao suportar esse endpoint, a implementacao faz fallback para `/orders/{id}`.
-- O `PedidoOutput` passa a ser preenchido com cliente, endereco e itens quando esses dados vierem no payload completo da Tray.
+- O `PedidoOutput` passa a ser preenchido com cliente, endereco e itens quando esses dados vierem no payload completo da
+  Tray.
 - Se a consulta por periodo vier sem pedidos, a biblioteca simplesmente nao adiciona resultados daquela integracao.
-- Em `consultarListaPedidos`, a listagem da Tray e usada apenas para localizar os IDs dos pedidos; depois a biblioteca hidrata cada pedido com a consulta completa por ID para evitar retornar o payload parcial da listagem.
-- A consulta de lista usa paginacao automatica com `page` e `limit`, repetindo chamadas ate esgotar as paginas retornadas pela Tray.
+- Em `consultarListaPedidos`, a listagem da Tray e usada apenas para localizar os IDs dos pedidos; depois a biblioteca
+  hidrata cada pedido com a consulta completa por ID para evitar retornar o payload parcial da listagem.
+- A consulta de lista usa paginacao automatica com `page` e `limit`, repetindo chamadas ate esgotar as paginas
+  retornadas pela Tray.
 - Existe uma protecao de timeout total na paginacao para evitar loops ou sincronizacoes presas por tempo indefinido.
 
 ### Como a biblioteca altera status
@@ -113,9 +120,11 @@ Operacoes suportadas hoje:
 - A biblioteca consulta `/orders/statuses` para localizar o `status_id` correspondente.
 - Depois envia `PUT /orders/{id}` com o `status_id`.
 - Se a Tray devolver o pedido completo no proprio `PUT`, esse retorno ja e usado.
-- Se a Tray devolver apenas a resposta generica (`message`, `id`, `code`), a biblioteca reconsulta o pedido para montar o `PedidoOutput`.
+- Se a Tray devolver apenas a resposta generica (`message`, `id`, `code`), a biblioteca reconsulta o pedido para montar
+  o `PedidoOutput`.
 
-Isso evita depender da API de clientes para o fluxo principal de pedidos, porque o endpoint completo do pedido ja traz `Customer` e `CustomerAddresses`.
+Isso evita depender da API de clientes para o fluxo principal de pedidos, porque o endpoint completo do pedido ja traz
+`Customer` e `CustomerAddresses`.
 
 ### Como a biblioteca inclui ou exclui produto do pedido
 
@@ -125,17 +134,22 @@ Isso evita depender da API de clientes para o fluxo principal de pedidos, porque
 
 ## Nota fiscal na Tray
 
-A Tray possui a API propria de nota fiscal em `orders/:id/invoices`, e a biblioteca passa a usar esse recurso diretamente.
+A Tray possui a API propria de nota fiscal em `orders/:id/invoices`, e a biblioteca passa a usar esse recurso
+diretamente.
 
 Comportamento implementado:
 
 - `validarNotaFiscalPedido` consulta `GET /orders/{id}/invoices`.
 - A validacao procura a nota pela `chave` e, como fallback, por `numero` + `serie` ou `link`.
 - `cadastrarNotaFiscalPedido` sempre valida antes para nao duplicar a nota no pedido.
-- Quando a nota ainda nao existir, a biblioteca envia `POST /orders/{id}/invoices` em JSON, seguindo o shape documentado do endpoint.
-- Se a Tray responder que `number`, `serie` e `key` ja existem, a biblioteca reconsulta as notas do pedido e devolve a nota como existente em vez de manter erro de duplicidade.
-- Se essa duplicidade existir em outro pedido, a biblioteca devolve uma mensagem funcional informando que a nota fiscal ja esta vinculada a outro pedido na Tray.
-- Apos o cadastro, a biblioteca consulta `GET /orders/{order_id}/invoices/{invoice_id}` para retornar a nota completa com os dados de `ProductCfop`.
+- Quando a nota ainda nao existir, a biblioteca envia `POST /orders/{id}/invoices` em JSON, seguindo o shape documentado
+  do endpoint.
+- Se a Tray responder que `number`, `serie` e `key` ja existem, a biblioteca reconsulta as notas do pedido e devolve a
+  nota como existente em vez de manter erro de duplicidade.
+- Se essa duplicidade existir em outro pedido, a biblioteca devolve uma mensagem funcional informando que a nota fiscal
+  ja esta vinculada a outro pedido na Tray.
+- Apos o cadastro, a biblioteca consulta `GET /orders/{order_id}/invoices/{invoice_id}` para retornar a nota completa
+  com os dados de `ProductCfop`.
 
 Campos esperados no cadastro da nota:
 

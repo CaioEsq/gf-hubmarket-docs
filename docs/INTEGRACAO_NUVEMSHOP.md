@@ -8,7 +8,8 @@ Essa classe deve ser instanciada com as credenciais carregadas do banco para o c
 
 ## Variaveis necessarias
 
-- `nuvemshopToken`: token de acesso a API da NuvemShop. Deve ser persistido pela aplicacao apos o processo de autorizacao.
+- `nuvemshopToken`: token de acesso a API da NuvemShop. Deve ser persistido pela aplicacao apos o processo de
+  autorizacao.
 - `nuvemshopStoreId`: identificador da loja na NuvemShop, necessario para montar as rotas da API.
 - `nuvemshopCodigo`: codigo retornado no processo de autorizacao da NuvemShop, necessario para gerar as credenciais.
 
@@ -51,10 +52,10 @@ A NuvemShop nao usa refresh token nesse fluxo atual da lib. O `storeId` e obriga
 Se a aplicacao estiver implementando o fluxo de autorizacao:
 
 ```java
-try {
-    nuvemshop.gerarCredenciais("codigo-retornado-no-callback");
-} catch (Exception e) {
-    System.err.println("Erro ao gerar credenciais para NuvemShop: " + e.getMessage());
+try{
+        nuvemshop.gerarCredenciais("codigo-retornado-no-callback");
+}catch( Exception e){
+        System.err.println("Erro ao gerar credenciais para NuvemShop: "+e.getMessage());
 }
 ```
 
@@ -67,7 +68,8 @@ Depois disso, os novos valores podem ser persistidos pela aplicacao em seu propr
 
 1. Checar se as credenciais existem no banco e parecem validas usando `isCredenciaisValidas()`.
 2. Se as credenciais nao forem validas, verificar se o `code` esta persistido no BD para tentar gerar novas credenciais.
-3. Se nao for possivel gerar novas credenciais, o cliente deve ser redirecionado para a tela de autorizacao da NuvemShop para obter um novo codigo e repetir o processo.
+3. Se nao for possivel gerar novas credenciais, o cliente deve ser redirecionado para a tela de autorizacao da NuvemShop
+   para obter um novo codigo e repetir o processo.
 4. Se as credenciais parecerem validas, carregar os valores de `token` e `storeId` na integracao para uso normal.
 
 Exemplo:
@@ -103,11 +105,15 @@ Observacoes importantes:
 - O cadastro retorna um `id` que pode conter a combinacao de `productId:variantId`.
 - Em atualizacoes, a biblioteca executa primeiro `PUT /products/{productId}` para os dados do produto.
 - Para variacao, a biblioteca usa `PUT /products/{productId}/variants/{variantId}` com `visible=true`.
-- Preco e estoque da NuvemShop passam a ser atualizados por esse mesmo endpoint de variacao, usando o `idIntegracao` no formato `productId:variantId`.
-- A ativacao de produto na NuvemShop e logica: a biblioteca usa `PUT /products/{productId}/variants/{variantId}` com `visible=true`.
-- A exclusao de produto na NuvemShop e logica: a biblioteca usa `PUT /products/{productId}/variants/{variantId}` com `visible=false`.
+- Preco e estoque da NuvemShop passam a ser atualizados por esse mesmo endpoint de variacao, usando o `idIntegracao` no
+  formato `productId:variantId`.
+- A ativacao de produto na NuvemShop e logica: a biblioteca usa `PUT /products/{productId}/variants/{variantId}` com
+  `visible=true`.
+- A exclusao de produto na NuvemShop e logica: a biblioteca usa `PUT /products/{productId}/variants/{variantId}` com
+  `visible=false`.
 - O `PUT /products/{productId}` e o ponto de falha esperado para produto inexistente na atualizacao.
-- Quando a API rejeita imagens remotas no cadastro, a biblioteca devolve uma mensagem amigavel indicando qual URL nao estava acessivel pela Nuvemshop.
+- Quando a API rejeita imagens remotas no cadastro, a biblioteca devolve uma mensagem amigavel indicando qual URL nao
+  estava acessivel pela Nuvemshop.
 
 ## Pedidos na NuvemShop
 
@@ -122,22 +128,26 @@ Operacoes tipicas:
 - consultar lista de pedidos
 - consultar pedido por ID
 - alterar status do pedido
-- incluir ou excluir produto do pedido nao sao suportados pela API atual da Nuvemshop e a biblioteca ignora essa operacao quando ela for solicitada
+- incluir ou excluir produto do pedido nao sao suportados pela API atual da Nuvemshop e a biblioteca ignora essa
+  operacao quando ela for solicitada
 - validar nota fiscal do pedido
 - cadastrar nota fiscal do pedido
 - consultar lista de pedidos com paginacao automatica ate esgotar o resultado da API
 - aplicar timeout total no fluxo paginado para evitar loops ou consultas prolongadas indefinidamente
 
-Nas consultas de produto ou pedido, caso a API retorne um `404` a integracao deixa de ser incluida no retorno dessa consulta.
+Nas consultas de produto ou pedido, caso a API retorne um `404` a integracao deixa de ser incluida no retorno dessa
+consulta.
 
 ## Nota fiscal na NuvemShop
 
-A NuvemShop nao expõe uma API de nota fiscal dedicada. Para isso, a biblioteca usa o padrao oficial de `Metafields.Invoice`, gravando a lista de NFes do pedido em `namespace=nfe` e `key=list`.
+A NuvemShop nao expõe uma API de nota fiscal dedicada. Para isso, a biblioteca usa o padrao oficial de
+`Metafields.Invoice`, gravando a lista de NFes do pedido em `namespace=nfe` e `key=list`.
 
 Comportamento implementado:
 
 - `validarNotaFiscalPedido` consulta `GET /metafields/orders` filtrando `owner_id`, `namespace=nfe` e `key=list`.
-- Quando o metafield existir, a biblioteca decodifica o `value` e procura a nota pela `chave` e, se necessario, pelo `link`.
+- Quando o metafield existir, a biblioteca decodifica o `value` e procura a nota pela `chave` e, se necessario, pelo
+  `link`.
 - `cadastrarNotaFiscalPedido` valida primeiro para evitar duplicidade.
 - Se o metafield ainda nao existir, a biblioteca cria `POST /metafields`.
 - Se o metafield ja existir, a biblioteca faz append da nova NFe no array atual e envia `PUT /metafields/{id}`.
@@ -147,7 +157,8 @@ Campos usados na gravacao da NFe:
 - `chave`
 - `link`
 
-Os demais campos do input de nota fiscal continuam disponiveis para a aplicacao, mas a NuvemShop persiste oficialmente apenas os dados do array de NFes no metafield.
+Os demais campos do input de nota fiscal continuam disponiveis para a aplicacao, mas a NuvemShop persiste oficialmente
+apenas os dados do array de NFes no metafield.
 
 ## Conversao de status
 
@@ -178,4 +189,5 @@ List<ResultadoIntegracao<PedidoOutput>> resultados =
 
 - O `storeId` e obrigatorio para qualquer chamada da API.
 - O token deve ser persistido pela aplicacao consumidora.
-- O carregamento dessas credenciais deve ser feito pela aplicacao a partir do banco do cliente antes de instanciar a integracao.
+- O carregamento dessas credenciais deve ser feito pela aplicacao a partir do banco do cliente antes de instanciar a
+  integracao.
